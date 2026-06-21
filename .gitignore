@@ -60,3 +60,6 @@ logs/
 
 # Personal files
 personal/
+
+# AI usage rules, not meant to be shared
+CLAUDE.md
