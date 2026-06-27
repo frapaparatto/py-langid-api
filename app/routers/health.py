@@ -1,12 +1,26 @@
-from fastapi import APIRouter
-from typing import Dict
-
+from fastapi import APIRouter, Request
 
 router = APIRouter()
 
-# I need to make it more robust and maybe format better the response
-
 
 @router.get("/health")
-def get_health() -> Dict[str, str]:
-    return {"status": "ok"}
+def get_health(request: Request) -> dict[str, str | bool]:
+    """
+    Liveness and model-readiness check.
+
+    Always returns 200: a successful response means the health check
+    itself ran, which is the endpoint's only responsibility. The model's
+    state is reported as data in the body, not as the status code.
+
+    The model_loaded field reflects whether the model was loaded at
+    startup. It is informational only: this endpoint reports the state but
+    does not act on it. Acting on an unavailable model (returning 503) is
+    the prediction route's responsibility, keeping the two concerns
+    separate.
+
+    The model is read directly from app.state via the request, rather than
+    through the prediction dependency, so the check stays independent of
+    the prediction path.
+    """
+    model_loaded = request.app.state.model is not None
+    return {"status": "ok", "model_loaded": model_loaded}

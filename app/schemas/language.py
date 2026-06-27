@@ -54,3 +54,14 @@ class PredictionOutput(BaseModel):
             ..., ge=0.0, le=1.0, description="Prediction confidence score (0.0 to 1.0)"
         ),
     ]
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "language_code": "IT",
+                    "confidence": 0.98,
+                },
+            ]
+        }
+    }
