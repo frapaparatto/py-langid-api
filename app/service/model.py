@@ -8,7 +8,7 @@ def predict(input: PredictionInput, model: Any):
         raise ModelUnavailableError()
 
     language_code = model.predict([input.text])[0]
-    confidence = model.predict_proba([input.text])[0].max()
+    confidence = round(model.predict_proba([input.text])[0].max(), 3)
 
     if language_code is None or confidence is None:
         raise PredictionFailedError()
