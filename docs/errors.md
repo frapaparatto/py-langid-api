@@ -12,7 +12,7 @@ All error responses share a single JSON shape, regardless of error type or origi
 
 `error_code` is a machine-readable category. `message` is a human-readable reason. `doc_url` links to documentation for that error.
 
-> **Note on `doc_url` values:** The `doc_url` in all current error responses is hardcoded to `https://github.com/frapaparatto/py-langid-api#errors`, which resolves to the top of this page for all errors. ADR-003 marks finalizing per-error target URLs as an open item. The per-error section anchors below (`#validation_error`, `#model_unavailable`, `#prediction_failed`) are stable and ready to be used as more specific targets once the code is updated.
+> **Note on `doc_url` values:** Each error's `doc_url` links directly to its specific section on this page (`#validation_error`, `#model_unavailable`, `#prediction_failed`).
 
 ## Contents
 
@@ -39,7 +39,7 @@ The `message` field in the response comes directly from Pydantic's first validat
 {
   "error_code": "validation_error",
   "message": "String should have at least 1 character",
-  "doc_url": "https://github.com/frapaparatto/py-langid-api#errors"
+  "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error"
 }
 ```
 
@@ -49,7 +49,7 @@ The `message` field in the response comes directly from Pydantic's first validat
 {
   "error_code": "validation_error",
   "message": "Field required",
-  "doc_url": "https://github.com/frapaparatto/py-langid-api#errors"
+  "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error"
 }
 ```
 
@@ -66,7 +66,7 @@ Raised when the language model is not loaded. This occurs when model loading fai
 {
   "error_code": "model_unavailable",
   "message": "The model is not loaded or unavailable.",
-  "doc_url": "https://github.com/frapaparatto/py-langid-api#errors"
+  "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#model_unavailable"
 }
 ```
 
@@ -83,6 +83,6 @@ Raised when the model is loaded but prediction returns no usable result: specifi
 {
   "error_code": "prediction_failed",
   "message": "Prediction failed unexpectedly.",
-  "doc_url": "https://github.com/frapaparatto/py-langid-api#errors"
+  "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#prediction_failed"
 }
 ```

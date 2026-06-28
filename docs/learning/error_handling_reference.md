@@ -11,15 +11,13 @@ Every error response, whatever its source, is unified into one consistent JSON s
 {
   "error_code": "validation_error",
   "message": "text field cannot be empty",
-  "doc_url": "https://github.com/frapaparatto/py-langid-api#errors"
+  "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error"
 }
 ```
 
 - **`error_code`**: a machine-readable category the client can branch on.
 - **`message`**: a human-readable reason.
-- **`doc_url`**: a link to documentation about that specific error, so the response itself is informative.
-
-The `doc_url` value above is illustrative; the real target is finalized once the documentation structure exists.
+- **`doc_url`**: a link to the per-error section on docs/errors.md, so the response itself is informative.
 
 
 ## Status code vs error code
