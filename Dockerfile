@@ -6,9 +6,9 @@ COPY --from=ghcr.io/astral-sh/uv:0.8.0 /uv /uvx /bin/
 WORKDIR /app
 ENV UV_NO_DEV=1
 
-COPY pyproject.toml uv.lock /app/   
-RUN uv sync --locked               
-COPY . /app                       
+COPY pyproject.toml uv.lock /app/
+RUN uv sync --locked
+COPY . /app
 
 EXPOSE 8000
 
