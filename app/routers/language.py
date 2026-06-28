@@ -13,9 +13,45 @@ router = APIRouter()
     "/identify-language",
     response_model=PredictionOutput,
     responses={
-        422: {"model": ErrorResponse, "description": "Validation error"},
-        503: {"model": ErrorResponse, "description": "Model unavailable"},
-        500: {"model": ErrorResponse, "description": "Prediction failed"},
+        422: {
+            "model": ErrorResponse,
+            "description": "Validation error",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error_code": "validation_error",
+                        "message": "text field cannot be empty",
+                        "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error",
+                    }
+                }
+            },
+        },
+        503: {
+            "model": ErrorResponse,
+            "description": "Model unavailable",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error_code": "model_unavailable",
+                        "message": "The model is not loaded or unavailable.",
+                        "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#model_unavailable",
+                    }
+                }
+            },
+        },
+        500: {
+            "model": ErrorResponse,
+            "description": "Prediction failed",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error_code": "prediction_failed",
+                        "message": "Prediction failed unexpectedly.",
+                        "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#prediction_failed",
+                    }
+                }
+            },
+        },
     },
 )
 def identify_language(input: PredictionInput, model: Any = Depends(get_model)) -> Any:
