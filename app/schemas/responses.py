@@ -1,10 +1,6 @@
 from typing import Annotated
 from pydantic import BaseModel, Field
 
-"""
-Success response corresponds to PredictionOutput defined in .language.
-"""
-
 
 class ErrorResponse(BaseModel):
     """
@@ -19,7 +15,7 @@ class ErrorResponse(BaseModel):
         {
             "error_code": "validation_error",
             "message": "text field cannot be empty",
-            "doc_url": "https://github.com/frapaparatto/py-langid-api#errors"
+            "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error"
         }
     """
 
@@ -44,7 +40,9 @@ class ErrorResponse(BaseModel):
         Field(
             ...,
             description="URL pointing to relevant error documentation",
-            examples=["https://github.com/frapaparatto/py-langid-api#errors"],
+            examples=[
+                "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error"
+            ],
         ),
     ]
 
@@ -54,7 +52,7 @@ class ErrorResponse(BaseModel):
                 {
                     "error_code": "validation_error",
                     "message": "text field cannot be empty",
-                    "doc_url": "https://github.com/frapaparatto/py-langid-api#errors",
+                    "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error",
                 }
             ]
         }

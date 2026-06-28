@@ -30,7 +30,7 @@ async def validation_exception_handler(
         content=ErrorResponse(
             error_code="validation_error",
             message=exc.errors()[0]["msg"],
-            doc_url="https://github.com/frapaparatto/py-langid-api#errors",
+            doc_url="https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error",
         ).model_dump(),
     )
 

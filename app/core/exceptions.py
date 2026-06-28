@@ -44,7 +44,7 @@ class ModelUnavailableError(LanguagePredictionError):
         super().__init__(
             error_code="model_unavailable",
             message=message,
-            doc_url="https://github.com/frapaparatto/py-langid-api#errors",
+            doc_url="https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#model_unavailable",
         )
 
 
@@ -62,5 +62,5 @@ class PredictionFailedError(LanguagePredictionError):
         super().__init__(
             error_code="prediction_failed",
             message=message,
-            doc_url="https://github.com/frapaparatto/py-langid-api#errors",
+            doc_url="https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#prediction_failed",
         )
