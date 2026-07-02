@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from typing import Callable, Any, Coroutine
 import pickle
 
+from .core.config import settings
 from .routers import health, language
 from .core.exceptions import LanguagePredictionError
 from .core.handlers import (
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
     # The path is a temporary placeholder; configuration replaces it later.
     print("Application startup: loading model...")
     try:
-        with open("./model.pkl", "rb") as file:
+        with open(settings.model_path, "rb") as file:
             app.state.model = pickle.load(file)
         print("Model loaded successfully.")
     except FileNotFoundError:

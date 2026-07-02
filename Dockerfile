@@ -1,5 +1,3 @@
-# Base image tracks a tag, not a digest, unlike the uv copy below.
-# Reproducibility is weaker here until this is pinned too.
 FROM python:3.13-slim-trixie
 COPY --from=ghcr.io/astral-sh/uv:0.8.0 /uv /uvx /bin/
 
