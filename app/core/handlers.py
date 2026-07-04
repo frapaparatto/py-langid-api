@@ -1,9 +1,12 @@
+import structlog
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from .exceptions import LanguagePredictionError
+from .exceptions import LanguagePredictionError, PredictionFailedError
 from ..schemas.responses import ErrorResponse
+
+log = structlog.get_logger()
 
 
 async def validation_exception_handler(
@@ -25,11 +28,16 @@ async def validation_exception_handler(
     error message from exc.errors() is surfaced as the message.
     """
     assert isinstance(exc, RequestValidationError)
+    message = exc.errors()[0]["msg"]
+    # WARNING, not ERROR: a validation error is a client mistake (4xx),
+    # expected operation, not a server-side failure. request_id is added
+    # automatically from the bound context.
+    log.warning("validation_error", message=message)
     return JSONResponse(
         status_code=422,
         content=ErrorResponse(
             error_code="validation_error",
-            message=exc.errors()[0]["msg"],
+            message=message,
             doc_url="https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#validation_error",
         ).model_dump(),
     )
@@ -45,16 +53,35 @@ async def language_prediction_error_handler(
     catches every subtype (ModelUnavailableError, PredictionFailedError,
     and any future one). Each exception carries its own status_code,
     error_code, message, and doc_url, so the handler reads them and builds
-    the response. No per-type branching is needed, because all domain
-    errors share the same response shape and differ only in their values.
+    the response.
 
     The exc parameter is typed as the broad Exception, not
     LanguagePredictionError, to satisfy the handler slot's expected
     signature (parameter contravariance). The assert isinstance narrows it
     back for the rest of the body, and is always true given how FastAPI
     dispatches this handler only for LanguagePredictionError and subtypes.
+
+    Both domain errors are server-side (5xx), so both log at ERROR.
+    PredictionFailedError additionally carries a chained cause
+    (exc.__cause__, the underlying sklearn exception preserved by the
+    service's `raise ... from e`), so it uses log.exception to capture that
+    traceback. ModelUnavailableError has no hidden cause, so plain
+    log.error is enough. request_id is added automatically from the
+    bound context.
     """
     assert isinstance(exc, LanguagePredictionError)
+    if isinstance(exc, PredictionFailedError):
+        log.exception(
+            "prediction_error",
+            error_code=exc.error_code,
+            status=exc.status_code,
+        )
+    else:
+        log.error(
+            "prediction_error",
+            error_code=exc.error_code,
+            status=exc.status_code,
+        )
     return JSONResponse(
         status_code=exc.status_code,
         content=ErrorResponse(

@@ -1,10 +1,19 @@
 from contextlib import asynccontextmanager
+import time
+import uuid
+import structlog
 from fastapi import FastAPI, APIRouter, Request, Response
 from fastapi.exceptions import RequestValidationError
 from typing import Callable, Any, Coroutine
 import pickle
 
+from structlog.contextvars import (
+    bind_contextvars,
+    clear_contextvars,
+)
+
 from .core.config import settings
+from .core.logging import setup_logging
 from .routers import health, language
 from .core.exceptions import LanguagePredictionError
 from .core.handlers import (
@@ -18,25 +27,31 @@ ExceptionHandler = Callable[[Request, Any], Coroutine[Any, Any, Response]]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    setup_logging(settings.log_level, settings.log_format)
+    log = structlog.get_logger()
+
     # Load the model once at startup, before the app accepts requests,
     # so every request reuses the same in-memory object.
-    # The path is a temporary placeholder; configuration replaces it later.
-    print("Application startup: loading model...")
+    log.info("startup")
+    log.info("model_loading", path=settings.model_path)
+
     try:
         with open(settings.model_path, "rb") as file:
             app.state.model = pickle.load(file)
-        print("Model loaded successfully.")
+        log.info("model_loaded", path=settings.model_path)
     except FileNotFoundError:
-        # Loading failed: leave the model unset so the dependency can
-        # detect it and the service can raise ModelUnavailableError (503).
-        print("Model file not found.")
+        # Leave the model unset so the dependency detects it and the
+        # service raises ModelUnavailableError (503).
+        log.error(
+            "model_load_failed", path=settings.model_path, reason="file_not_found"
+        )
         app.state.model = None
-    except Exception as e:
-        print(f"Error loading model during startup: {e}")
+    except Exception:
+        # log.exception captures the full traceback as structured data.
+        log.exception("model_load_failed", path=settings.model_path)
         app.state.model = None
     yield
-    # Shutdown: release the model.
-    print("Application shutdown: cleaning up resources...")
+    log.info("shutdown")
     app.state.model = None
 
 
@@ -66,3 +81,40 @@ exception_handlers: dict[int | type[Exception], ExceptionHandler] = {
 }
 
 app = create_app(routers, exception_handlers)
+
+
+@app.middleware("http")
+async def logging_middleware(request: Request, call_next):
+    log = structlog.get_logger()
+
+    request_id = str(uuid.uuid4())
+    bind_contextvars(request_id=request_id)
+    start_time = time.perf_counter()
+
+    log.debug("request_started", method=request.method, path=request.url.path)
+
+    try:
+        response = await call_next(request)
+    except Exception:
+        # Unanticipated failure in the route: capture the traceback, then
+        # re-raise so the registered exception handlers produce the response.
+        duration_ms = (time.perf_counter() - start_time) * 1000
+        log.exception(
+            "request_failed",
+            method=request.method,
+            path=request.url.path,
+            duration_ms=round(duration_ms, 2),
+        )
+        raise
+    else:
+        duration_ms = (time.perf_counter() - start_time) * 1000
+        log.info(
+            "request_completed",
+            method=request.method,
+            path=request.url.path,
+            status=response.status_code,
+            duration_ms=round(duration_ms, 2),
+        )
+        return response
+    finally:
+        clear_contextvars()
