@@ -23,4 +23,4 @@ def get_health(request: Request) -> dict[str, str | bool]:
     the prediction path.
     """
     model_loaded = request.app.state.model is not None
-    return {"status": "ok", "model_loaded": model_loaded}
+    return {"status": "OK", "model_loaded": model_loaded}

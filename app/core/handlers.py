@@ -62,12 +62,14 @@ async def language_prediction_error_handler(
     dispatches this handler only for LanguagePredictionError and subtypes.
 
     Both domain errors are server-side (5xx), so both log at ERROR.
-    PredictionFailedError additionally carries a chained cause
-    (exc.__cause__, the underlying sklearn exception preserved by the
-    service's `raise ... from e`), so it uses log.exception to capture that
-    traceback. ModelUnavailableError has no hidden cause, so plain
-    log.error is enough. request_id is added automatically from the
-    bound context.
+    PredictionFailedError additionally carries a chained cause, the
+    underlying sklearn exception preserved by the service's
+    `raise ... from e`. The handler never reads exc.__cause__ directly:
+    log.exception captures sys.exc_info(), and Python's traceback
+    rendering walks __cause__ automatically, so the underlying exception
+    still shows up in the log output. ModelUnavailableError has no hidden
+    cause, so plain log.error is enough. request_id is added automatically
+    from the bound context.
     """
     assert isinstance(exc, LanguagePredictionError)
     if isinstance(exc, PredictionFailedError):
