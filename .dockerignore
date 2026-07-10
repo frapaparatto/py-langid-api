@@ -11,3 +11,6 @@ venv/
 tests/
 .env
 .env.*
+docs/
+*.md
+*.sh
