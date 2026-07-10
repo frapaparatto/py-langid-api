@@ -53,7 +53,7 @@ class PredictionFailedError(LanguagePredictionError):
     Raised when prediction fails unexpectedly.
 
     Maps to HTTP 500. This covers the case where the model is loaded but
-    predicting raises, or returns nothing usable.
+    model.predict() or model.predict_proba() raises during prediction.
     """
 
     status_code = 500

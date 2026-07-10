@@ -17,6 +17,7 @@ All error responses share a single JSON shape, regardless of error type or origi
 ## Contents
 
 - [validation\_error (422)](#validation_error)
+- [not\_found (404)](#not_found)
 - [model\_unavailable (503)](#model_unavailable)
 - [prediction\_failed (500)](#prediction_failed)
 
@@ -54,6 +55,25 @@ The `message` field in the response comes directly from Pydantic's first validat
 ```
 
 
+## not_found
+
+**HTTP status:** 404 Not Found
+
+Raised when the request path matches no registered route. Registered
+directly on the status code, not on a domain exception, since FastAPI
+raises this itself before any route or service code runs.
+
+**Example response:**
+
+```json
+{
+  "error_code": "not_found",
+  "message": "the requested resource does not exist",
+  "doc_url": "https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#not_found"
+}
+```
+
+
 ## model_unavailable
 
 **HTTP status:** 503 Service Unavailable
@@ -75,7 +95,7 @@ Raised when the language model is not loaded. This occurs when model loading fai
 
 **HTTP status:** 500 Internal Server Error
 
-Raised when the model is loaded but prediction returns no usable result: specifically, when `model.predict()` or `model.predict_proba()` returns a value from which `language_code` or `confidence` is `None`. The message is a fixed default string.
+Raised when the model is loaded but `model.predict()` or `model.predict_proba()` raises during prediction. The service catches the exception and re-raises `PredictionFailedError` via `raise ... from e`, preserving the original exception as the chained cause in the log output. The message is a fixed default string.
 
 **Example response:**
 

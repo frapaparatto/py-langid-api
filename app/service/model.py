@@ -4,6 +4,21 @@ from ..core.exceptions import ModelUnavailableError, PredictionFailedError
 
 
 def predict(input: PredictionInput, model: Any):
+    """
+    Predict the language of the input text and its confidence score.
+
+    Raises ModelUnavailableError if model is None, meaning it was not
+    loaded at startup. Raises PredictionFailedError, chaining the
+    original exception as its cause, if predict or predict_proba raises
+    for any other reason.
+
+    Confidence is the highest class probability from predict_proba,
+    rounded to 3 decimal places, not necessarily the same computation
+    predict itself uses internally to choose the label.
+
+    Returns a PredictionOutput with the predicted language_code and the
+    confidence score.
+    """
     if model is None:
         raise ModelUnavailableError()
 
