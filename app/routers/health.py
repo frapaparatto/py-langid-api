@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Request
 
+from ..schemas.health import HealthResponse
+
 router = APIRouter()
 
 
-@router.get("/health")
-def get_health(request: Request) -> dict[str, str | bool]:
+@router.get("/health", response_model=HealthResponse)
+def get_health(request: Request) -> HealthResponse:
     """
     Liveness and model-readiness check.
 
@@ -23,4 +25,4 @@ def get_health(request: Request) -> dict[str, str | bool]:
     the prediction path.
     """
     model_loaded = request.app.state.model is not None
-    return {"status": "OK", "model_loaded": model_loaded}
+    return HealthResponse(status="OK", model_loaded=model_loaded)
