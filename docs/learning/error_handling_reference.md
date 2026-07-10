@@ -41,15 +41,12 @@ Each code is marked by who produces it: **automatic** (FastAPI emits it without 
 | Unknown route | 404 | not_found | automatic (FastAPI) |
 | Model not loaded / not ready | 503 | model_unavailable | manual (needs readiness check) |
 | Prediction fails unexpectedly | 500 | prediction_failed | manual |
-| Rate limit exceeded | 429 | rate_limit_exceeded | stretch-dependent |
 
 The core three for this project, the ones to implement first:
 
 - model not loaded → `503` → `model_unavailable`
 - prediction fails unexpectedly → `500` → `prediction_failed`
 - input validation (automatic, via Pydantic) → `422` → `validation_error`
-
-Honesty rule: do not document a code the API cannot actually produce. Before finalizing, remove any manual/stretch codes that are not implemented.
 
 
 ## The two layers of error handling
@@ -75,11 +72,10 @@ The service raises **plain domain exceptions** (not HTTP-aware), for example a m
 
 This keeps routers clean and centralizes the mapping in one place per exception type.
 
-
 ## The decision rule: which layer handles what
 
-- **Broad or automatic** (validation, totally unexpected crashes) → global handler, written once.
-- **A specific domain condition the code can name** (model unavailable, prediction failed for a known reason) → a registered handler for that exception type.
+- **Broad or automatic** (validation, totally unexpected crashes): global handler, written once.
+- **A specific domain condition the code can name** (model unavailable, prediction failed for a known reason): a registered handler for that exception type.
 
 
 ## Design decisions behind this
@@ -158,7 +154,7 @@ A key fact that explains the handler code: **`response_model` does not apply to 
 
 So nothing automatically guarantees an error's shape. That is why handlers build `ErrorResponse(...).model_dump()` by hand: constructing the `ErrorResponse` validates the fields (right types, all present) at construction time, then `.model_dump()` turns it into a dict, then `JSONResponse` carries it with the chosen status code.
 
-The result: the success path gets automatic shape-enforcement via `response_model`; the error path gets manual shape-enforcement via constructing `ErrorResponse` in the handler, because returning a `JSONResponse` opts out of the automatic machinery. Routing every error through `ErrorResponse` keeps the shape consistent and gives a single source of truth, the same guarantee `response_model` gives the success path, enforced manually.
+**The result**: the success path gets automatic shape-enforcement via `response_model`; the error path gets manual shape-enforcement via constructing `ErrorResponse` in the handler, because returning a `JSONResponse` opts out of the automatic machinery. Routing every error through `ErrorResponse` keeps the shape consistent and gives a single source of truth, the same guarantee `response_model` gives the success path, enforced manually.
 
 
 ## Registering handlers, and the mechanisms involved
@@ -200,7 +196,7 @@ A type hint on a parameter is a **promise about what the function accepts**. Wri
 
 The handler slot in the dict, however, expects a function whose `exc` is the **base** `Exception` (or `Any`). The slot's promise is "I might pass you any `Exception`."
 
-Now the mismatch:
+**Now the mismatch:**
 
 - The **slot** demands: a function that can accept any `Exception`.
 - A **specific handler** promises: I only accept `ModelUnavailableError`.
@@ -210,11 +206,9 @@ These do not match, and the direction is the key point. It feels like they shoul
 The reasoning for the reversal: a slot that promises "I might pass anything" cannot be safely filled by a function that only handles a narrow type. If something put a `ValueError` into a slot that accepts any `Exception`, a handler expecting `ModelUnavailableError` would break. So for parameters, a function is only safely assignable if it accepts **the same type or a broader one**, never a narrower one.
 
 - Slot wants a function accepting `Exception`.
-- Function accepting `Exception` → fine (same).
-- Function accepting `BaseException` (broader) → fine.
-- Function accepting `ModelUnavailableError` (narrower) → type error.
-
-An analogy: the slot is a job posting that says "must repair any vehicle." A mechanic who only repairs one specific car cannot take it, the job might hand them anything. A mechanic who repairs any vehicle qualifies. The job demands breadth; a narrow specialist does not satisfy it.
+- Function accepting `Exception`: fine (same).
+- Function accepting `BaseException` (broader): fine.
+- Function accepting `ModelUnavailableError` (narrower): type error.
 
 
 ## Why it runs fine anyway, and the fixes
