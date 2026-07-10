@@ -19,6 +19,7 @@ from .core.exceptions import LanguagePredictionError
 from .core.handlers import (
     validation_exception_handler,
     language_prediction_error_handler,
+    not_found_handler,
 )
 
 
@@ -78,6 +79,7 @@ routers = [health.router, language.router]
 exception_handlers: dict[int | type[Exception], ExceptionHandler] = {
     RequestValidationError: validation_exception_handler,
     LanguagePredictionError: language_prediction_error_handler,
+    404: not_found_handler,
 }
 
 app = create_app(routers, exception_handlers)

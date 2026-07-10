@@ -92,3 +92,30 @@ async def language_prediction_error_handler(
             doc_url=exc.doc_url,
         ).model_dump(),
     )
+
+
+async def not_found_handler(request: Request, exc: Exception) -> JSONResponse:
+    """
+    Handle requests to a path with no matching route.
+
+    Registered directly on the integer status code 404, not on an exception
+    type: FastAPI raises a plain HTTPException(status_code=404) when no
+    route matches, not a domain exception, so there is no
+    LanguagePredictionError subtype to key a handler off of. FastAPI's
+    exception_handlers mapping accepts either an exception type or an int
+    status code as a key; this is the int case.
+
+    The message is fixed rather than read off exc.detail, since FastAPI's
+    default detail ("Not Found") does not follow this project's lowercase,
+    no-punctuation message style (ADR-002). request_id is added
+    automatically from the bound context.
+    """
+    log.warning("not_found", path=request.url.path)
+    return JSONResponse(
+        status_code=404,
+        content=ErrorResponse(
+            error_code="not_found",
+            message="the requested resource does not exist",
+            doc_url="https://github.com/frapaparatto/py-langid-api/blob/main/docs/errors.md#not_found",
+        ).model_dump(),
+    )
