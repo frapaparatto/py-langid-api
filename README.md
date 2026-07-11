@@ -70,7 +70,16 @@ failure), lives in `docs/architecture.md`.
 
 ### Local run
 
+First create a virtual environment: a private folder (`.venv`) that holds
+just this project's Python packages, kept separate from anything else
+installed on your computer so this project can never conflict with, or be
+affected by, other Python projects. Then install the dependencies into it,
+and finally run the app. Each line below is a command: run it in a terminal,
+from the directory containing this repository, waiting for each to finish
+before running the next.
+
 ```bash
+uv venv
 uv sync
 uv run uvicorn app.main:app --reload
 ```
@@ -163,12 +172,11 @@ All architecture decision records live in `docs/adr/`. The index is
 This project was built as a learning exercise under the AI usage protocol
 defined in `CLAUDE.md`.
 
-Socratic reasoning: when stuck on a design or implementation problem, AI
+- **Socratic reasoning**: when stuck on a design or implementation problem, AI
 was to be consulted only after independent effort, using questions that
 challenge assumptions rather than supplying answers, with AI generating no
 code in that mode.
-
-Architecture review after an independent position: AI reviewed a design
+- **Architecture review after an independent position**: AI reviewed a design
 only after a position was already formed and, in most cases, implemented
 once, never proposing the architecture first. The repository's ADRs are
 themselves written in that voice, first person, documenting a decision I
@@ -178,18 +186,15 @@ error handling strategy (ADR-002), the error propagation strategy
 (ADR-004), the logging strategy (ADR-005), and the testing strategy
 (ADR-006): each records a decision reached first, with AI entering
 afterward for feedback.
-
-Docstrings and comments: for the documentation embedded in the code, AI's
+- **Docstrings and comments**: for the documentation embedded in the code, AI's
 role was limited to correcting grammar and lightly expanding a first draft
 I wrote. In each case I wrote the initial docstring or comment, and AI
 refined the wording after a short discussion. The reasoning expressed in
 them is mine.
-
-What AI did not do: it did not choose the architecture, decide the error
+- **What AI did not do**: it did not choose the architecture, decide the error
 taxonomy, or decide what to test, first. Debugging in this project was
 manual, root cause first, per the same CLAUDE.md protocol.
-
-Documentation written by AI: the study notes in `docs/learning/` (on
+- **Documentation written by AI**: the study notes in `docs/learning/` (on
 logging, error handling, and related topics) were written by AI only after
 a discussion in which my own understanding was stated, questioned, and
 corrected until verified. The reasoning and the ideas in those notes are
@@ -198,18 +203,6 @@ understanding.
 
 ## Future Improvements
 
-- Rate limiting (`429 Too Many Requests`), stretch-dependent per ADR-003:
-  not yet implemented, so not currently documented as a producible status
-  code.
-- Request ID tracing beyond the current per-request log correlation: surface
-  the request ID back to the client (for example as a response header) so a
-  caller can reference it when reporting an issue.
-- Model-loading lifecycle test coverage beyond the present/missing-file
-  cases already in `tests/test_lifespan.py`, deferred in ADR-006 until the
-  setup pattern for more involved startup scenarios is understood.
-- NGINX reverse proxy in front of the FastAPI container for TLS termination,
-  not yet wired into `docker-compose.yml`.
-- Deployment to a Docker-native PaaS (Render or Railway), not yet executed.
-- Postman collection covering both endpoints with valid and invalid request
-  cases, for manual verification during development and against the
-  deployed service.
+- Rate limiting (`429 Too Many Requests`): not yet implemented, so not currently documented as a producible status code.
+- Request ID tracing beyond the current per-request log correlation: surface the request ID back to the client (for example as a response header) so a caller can reference it when reporting an issue.
+- Deployment to a Docker-native PaaS.
